@@ -1,6 +1,28 @@
-import cv2 as cv
 import os
+
+import cv2 as cv
 import numpy as np
+
+
+def ResizeWithAspectRatio(image, width=None, height=None, inter=cv.INTER_AREA):
+    """
+    Reference:
+        - https://stackoverflow.com/a/58126805
+    """
+
+    dim = None
+    (h, w) = image.shape[:2]
+
+    if width is None and height is None:
+        return image
+    if width is None:
+        r = height / float(h)
+        dim = (int(w * r), height)
+    else:
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    return cv.resize(image, dim, interpolation=inter)
 
 
 def find_arrow_directions(img, debug=False):
@@ -30,14 +52,19 @@ def find_arrow_directions(img, debug=False):
         """
         Returns a boolean value based on whether two pixels are within a certain HSV range of each other.
         """
-        return abs(int(h[r1][c1]) - int(h[r2][c2])) <= diff and s[r2][c2] >= 150 and v[r2][c2] >= 150 and h[r2][c2] <= 70
+        return (
+            abs(int(h[r1][c1]) - int(h[r2][c2])) <= diff
+            and s[r2][c2] >= 150
+            and v[r2][c2] >= 150
+            and h[r2][c2] <= 70
+        )
 
     def near_gradient(r, c):
         """
         Returns a boolean value based on whether or not a certain pixel is around an already discovered gradient.
         """
         for i, j in valid_gradient:
-            if abs(i-r) < 15 and abs(c-j) < 15:
+            if abs(i - r) < 15 and abs(c - j) < 15:
                 return True
         return False
 
@@ -81,16 +108,24 @@ def find_arrow_directions(img, debug=False):
             r2, c2 = stack.pop()
             visited[r2][c2] = True
             if r2 + 1 < m:
-                if not visited[r2 + 1][c2] and hue_is_valid(r2, c2, r2 + 1, c2, 2 if direction else 10):
+                if not visited[r2 + 1][c2] and hue_is_valid(
+                    r2, c2, r2 + 1, c2, 2 if direction else 10
+                ):
                     stack.append((r2 + 1, c2))
             if r2 - 1 >= 0:
-                if not visited[r2 - 1][c2] and hue_is_valid(r2, c2, r2 - 1, c2, 2 if direction else 10):
+                if not visited[r2 - 1][c2] and hue_is_valid(
+                    r2, c2, r2 - 1, c2, 2 if direction else 10
+                ):
                     stack.append((r2 - 1, c2))
             if c2 + 1 < n:
-                if not visited[r2][c2 + 1] and hue_is_valid(r2, c2, r2, c2 + 1, 10 if direction else 2):
+                if not visited[r2][c2 + 1] and hue_is_valid(
+                    r2, c2, r2, c2 + 1, 10 if direction else 2
+                ):
                     stack.append((r2, c2 + 1))
             if c2 - 1 >= 0:
-                if not visited[r2][c2 - 1] and hue_is_valid(r2, c2, r2, c2 - 1, 10 if direction else 2):
+                if not visited[r2][c2 - 1] and hue_is_valid(
+                    r2, c2, r2, c2 - 1, 10 if direction else 2
+                ):
                     stack.append((r2, c2 - 1))
             canvas[r2][c2] = 180
 
@@ -124,18 +159,36 @@ def find_arrow_directions(img, debug=False):
                             expand_gradient(r, c, 0)
 
     if debug:
-        cv.imshow("Hue", h)
-        cv.imshow("Saturation", s)
-        cv.imshow("Value", v)
-        cv.imshow("Original", img)
-        cv.imshow("Parsed", canvas)
+        screenshot_size = (1280, 720)
+        width = int(screenshot_size[0] / 3)
+        height = int(screenshot_size[1] / 3)
+        title_bar_height = 30
+
+        cv.imshow("Hue", ResizeWithAspectRatio(h, height=height))
+        cv.imshow("Saturation", ResizeWithAspectRatio(s, height=height))
+        cv.imshow("Value", ResizeWithAspectRatio(v, height=height))
+        cv.imshow("Original", ResizeWithAspectRatio(img, height=height))
+        cv.imshow("Parsed", ResizeWithAspectRatio(canvas, height=height))
+
+        cv.moveWindow("Original", width, 0)
+        cv.moveWindow("Hue", 0, height + title_bar_height)
+        cv.moveWindow("Saturation", width, height + title_bar_height)
+        cv.moveWindow("Value", 2 * width, height + title_bar_height)
+        cv.moveWindow("Parsed", width, 2 * (height + title_bar_height))
+
         cv.waitKey(0)
 
     return sorted(directions, key=lambda x: x[1][1])
 
 
 if __name__ == "__main__":
-    for file_name in os.listdir("docs/rune_screenshots"):
+    dir = "docs/rune_screenshots/"
+    for file_name in os.listdir(dir):
         if file_name.endswith(".png"):
-            img = cv.imread("docs/rune_screenshots/" + file_name)
-            print(f'File:{file_name}, Directions={find_arrow_directions(img, True)}')
+            img = cv.imread(dir + file_name)
+
+            directions_with_position = find_arrow_directions(img, False)
+            only_directions = [t[0] for t in directions_with_position]
+            print(f"Image File: '{file_name}' >>> Directions = {only_directions}")
+
+            find_arrow_directions(img, True)
