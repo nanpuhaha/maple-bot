@@ -107,26 +107,30 @@ def find_arrow_directions(img, debug=False):
         while stack:
             r2, c2 = stack.pop()
             visited[r2][c2] = True
-            if r2 + 1 < m:
-                if not visited[r2 + 1][c2] and hue_is_valid(
-                    r2, c2, r2 + 1, c2, 2 if direction else 10
-                ):
-                    stack.append((r2 + 1, c2))
-            if r2 - 1 >= 0:
-                if not visited[r2 - 1][c2] and hue_is_valid(
-                    r2, c2, r2 - 1, c2, 2 if direction else 10
-                ):
-                    stack.append((r2 - 1, c2))
-            if c2 + 1 < n:
-                if not visited[r2][c2 + 1] and hue_is_valid(
-                    r2, c2, r2, c2 + 1, 10 if direction else 2
-                ):
-                    stack.append((r2, c2 + 1))
-            if c2 - 1 >= 0:
-                if not visited[r2][c2 - 1] and hue_is_valid(
-                    r2, c2, r2, c2 - 1, 10 if direction else 2
-                ):
-                    stack.append((r2, c2 - 1))
+            if (
+                r2 + 1 < m
+                and not visited[r2 + 1][c2]
+                and hue_is_valid(r2, c2, r2 + 1, c2, 2 if direction else 10)
+            ):
+                stack.append((r2 + 1, c2))
+            if (
+                r2 >= 1
+                and not visited[r2 - 1][c2]
+                and hue_is_valid(r2, c2, r2 - 1, c2, 2 if direction else 10)
+            ):
+                stack.append((r2 - 1, c2))
+            if (
+                c2 + 1 < n
+                and not visited[r2][c2 + 1]
+                and hue_is_valid(r2, c2, r2, c2 + 1, 10 if direction else 2)
+            ):
+                stack.append((r2, c2 + 1))
+            if (
+                c2 >= 1
+                and not visited[r2][c2 - 1]
+                and hue_is_valid(r2, c2, r2, c2 - 1, 10 if direction else 2)
+            ):
+                stack.append((r2, c2 - 1))
             canvas[r2][c2] = 180
 
     def find_direction(r, c):
@@ -153,7 +157,7 @@ def find_arrow_directions(img, debug=False):
                 if direction:
                     directions.append((direction, (r, c)))
                     if debug:
-                        if direction == "LEFT" or direction == "RIGHT":
+                        if direction in ["LEFT", "RIGHT"]:
                             expand_gradient(r, c, 1)
                         else:
                             expand_gradient(r, c, 0)

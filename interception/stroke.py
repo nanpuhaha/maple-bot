@@ -47,28 +47,29 @@ class mouse_stroke(stroke):
 
     @property
     def data(self):
-        data = struct.pack(self.fmt,
-                           self.state,
-                           self.flags,
-                           self.rolling,
-                           self.x,
-                           self.y,
-                           self.information)
-        return data
+        return struct.pack(
+            self.fmt,
+            self.state,
+            self.flags,
+            self.rolling,
+            self.x,
+            self.y,
+            self.information,
+        )
 
     @property
     def data_raw(self):
-        data = struct.pack(self.fmt_raw,
-                           0,
-                           self.flags,
-                           self.state,
-                           self.rolling,
-                           0,
-                           self.x,
-                           self.y,
-                           self.information)
-
-        return data
+        return struct.pack(
+            self.fmt_raw,
+            0,
+            self.flags,
+            self.state,
+            self.rolling,
+            0,
+            self.x,
+            self.y,
+            self.information,
+        )
 
 
 class key_stroke(stroke):
@@ -95,10 +96,8 @@ class key_stroke(stroke):
 
     @property
     def data(self):
-        data = struct.pack(self.fmt, self.code, self.state, self.information)
-        return data
+        return struct.pack(self.fmt, self.code, self.state, self.information)
 
     @property
     def data_raw(self):
-        data = struct.pack(self.fmt_raw, 0, self.code, self.state, 0, self.information)
-        return data
+        return struct.pack(self.fmt_raw, 0, self.code, self.state, 0, self.information)

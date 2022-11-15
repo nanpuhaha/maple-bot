@@ -80,17 +80,14 @@ class Player:
                     # Player has reached target y-destination, release all held keys.
                     self.release_all()
                     break
-                # Player is above target y-position.
                 elif y1 < y2:
                     self.hold("DOWN")
                     self.press(JUMP_KEY)
-                # Player is below target y-position.
+                elif y1 - y2 > 30:
+                    self.press(ROPE_LIFT_KEY)
                 else:
-                    if y1 - y2 > 30:
-                        self.press(ROPE_LIFT_KEY)
-                    else:
-                        self.press("UP")
-                        self.press("UP")
+                    self.press("UP")
+                    self.press("UP")
                 # Delay for player falling down or jumping up.
                 time.sleep(1)
             else:

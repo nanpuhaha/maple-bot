@@ -30,10 +30,7 @@ class interception():
     def wait(self, milliseconds=-1):
 
         result = k32.WaitForMultipleObjects(MAX_DEVICES, self._c_events, 0, milliseconds)
-        if result == -1 or result == 0x102:
-            return 0
-        else:
-            return result
+        return 0 if result in [-1, 0x102] else result
 
     def set_filter(self, predicate, filter):
         for i in range(MAX_DEVICES):
@@ -58,7 +55,7 @@ class interception():
 
     @staticmethod
     def is_keyboard(device):
-        return device + 1 > 0 and device + 1 <= MAX_KEYBOARD
+        return device > -1 and device + 1 <= MAX_KEYBOARD
 
     @staticmethod
     def is_mouse(device):
@@ -66,7 +63,7 @@ class interception():
 
     @staticmethod
     def is_invalid(device):
-        return device + 1 <= 0 or device + 1 > (MAX_KEYBOARD + MAX_MOUSE)
+        return device <= -1 or device + 1 > (MAX_KEYBOARD + MAX_MOUSE)
 
     def _destroy_context(self):
         for device in self._context:
